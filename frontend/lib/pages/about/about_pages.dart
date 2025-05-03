@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 
-class MarketPages extends StatelessWidget {
-  const MarketPages({super.key});
+class AboutPages extends StatelessWidget {
+  const AboutPages({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Market"),
-        backgroundColor: Colors.green,
+        title: const Text("About Us"),
+        backgroundColor: Colors.blue,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -16,7 +16,7 @@ class MarketPages extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: const [
             Text(
-              'Welcome to the Market!',
+              'Welcome to the About Page!',
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
@@ -24,12 +24,12 @@ class MarketPages extends StatelessWidget {
             ),
             SizedBox(height: 16),
             Text(
-              'Here you can browse a wide range of products and find the best deals available in the market.',
+              'This application is designed to help you navigate easily and explore various sections like Home, Explore, Favorites, and Profile.',
               style: TextStyle(fontSize: 16),
             ),
             SizedBox(height: 16),
             Text(
-              'Enjoy shopping with us!',
+              'We hope you enjoy using our app!',
               style: TextStyle(fontSize: 16),
             ),
           ],
