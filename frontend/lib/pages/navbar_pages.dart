@@ -9,10 +9,14 @@ class CheerfulMinimalistNavBar extends StatefulWidget {
 }
 
 class _CheerfulMinimalistNavBarState extends State<CheerfulMinimalistNavBar>
-    with TickerProviderStateMixin {
+    with TickerProviderStateMixin, RouteAware {
   int _selectedIndex = 0;
   late List<AnimationController> _animationControllers;
   late List<Animation<double>> _animations;
+
+  bool _isAnimating = false;
+  DateTime? _lastTapTime;
+  late RouteObserver<PageRoute> _routeObserver;
 
   final List<NavItem> _navItems = [
     NavItem(
@@ -44,6 +48,8 @@ class _CheerfulMinimalistNavBarState extends State<CheerfulMinimalistNavBar>
   @override
   void initState() {
     super.initState();
+    _routeObserver = RouteObserver<PageRoute>();
+    
     _animationControllers = List.generate(
       _navItems.length,
       (index) => AnimationController(
@@ -57,42 +63,97 @@ class _CheerfulMinimalistNavBarState extends State<CheerfulMinimalistNavBar>
         CurvedAnimation(
           parent: _animationControllers[index],
           curve: Curves.easeOut,
+          reverseCurve: Curves.easeIn,
         ),
       ),
     );
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    ModalRoute? route = ModalRoute.of(context);
+    if (route != null) {
+      _routeObserver.subscribe(this, route as PageRoute<dynamic>);
+      _updateSelectedIndex(route.settings.name);
+    }
+  }
+
+  @override
   void dispose() {
+    _routeObserver.unsubscribe(this);
     for (var controller in _animationControllers) {
       controller.dispose();
     }
     super.dispose();
   }
 
-  void _onItemTapped(int index) {
+  @override
+  void didPush() {
+    _updateSelectedIndex(ModalRoute.of(context)?.settings.name);
+  }
+
+  @override
+  void didPopNext() {
+    _updateSelectedIndex(ModalRoute.of(context)?.settings.name);
+  }
+
+  void _updateSelectedIndex(String? routeName) {
+    if (routeName == null) return;
+    
+    final index = _navItems.indexWhere((item) => item.route == routeName);
+    if (index != -1 && index != _selectedIndex) {
+      setState(() {
+        _selectedIndex = index;
+      });
+    }
+  }
+
+  Future<void> _onItemTapped(int index) async {
+    final now = DateTime.now();
+    if (_lastTapTime != null &&
+        now.difference(_lastTapTime!) < const Duration(milliseconds: 500)) {
+      return;
+    }
+    _lastTapTime = now;
+
+    if (_isAnimating || _selectedIndex == index) return;
+
     setState(() {
-      _selectedIndex = index;
+      _isAnimating = true;
     });
 
-    for (var controller in _animationControllers) {
-      controller.reverse();
+    // Reset all animations first
+    await Future.wait(
+      _animationControllers.map((controller) => controller.reverse()),
+    );
+
+    // Play the selected animation
+    await _animationControllers[index].forward();
+
+    // Navigate after animation completes
+    try {
+      await Navigator.pushNamed(context, _navItems[index].route);
+    } catch (e) {
+      debugPrint('Navigation error: $e');
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isAnimating = false;
+        });
+      }
     }
-
-    _animationControllers[index].forward();
-
-    // Navigasi ke halaman berdasarkan route
-    Navigator.pushNamed(context, _navItems[index].route);
   }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 200),
       decoration: BoxDecoration(
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withOpacity(_isAnimating ? 0.05 : 0.1),
             blurRadius: 10,
             offset: const Offset(0, -2),
           ),
@@ -114,39 +175,43 @@ class _CheerfulMinimalistNavBarState extends State<CheerfulMinimalistNavBar>
     final item = _navItems[index];
     final isSelected = _selectedIndex == index;
 
-    return GestureDetector(
-      onTap: () => _onItemTapped(index),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          ScaleTransition(
-            scale: _animations[index],
-            child: Icon(
-              item.icon,
-              size: 24,
-              color: isSelected ? item.color : Colors.grey.shade400,
+    return IgnorePointer(
+      ignoring: _isAnimating,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: () => _onItemTapped(index),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ScaleTransition(
+              scale: _animations[index],
+              child: Icon(
+                item.icon,
+                size: 24,
+                color: isSelected ? item.color : Colors.grey.shade400,
+              ),
             ),
-          ),
-          const SizedBox(height: 4),
-          AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
-            width: isSelected ? 20 : 0,
-            height: 3,
-            decoration: BoxDecoration(
-              color: item.color,
-              borderRadius: BorderRadius.circular(2),
+            const SizedBox(height: 4),
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              width: isSelected ? 20 : 0,
+              height: 3,
+              decoration: BoxDecoration(
+                color: item.color,
+                borderRadius: BorderRadius.circular(2),
+              ),
             ),
-          ),
-          const SizedBox(height: 2),
-          Text(
-            item.label,
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-              color: isSelected ? item.color : Colors.grey.shade400,
+            const SizedBox(height: 2),
+            Text(
+              item.label,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                color: isSelected ? item.color : Colors.grey.shade400,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

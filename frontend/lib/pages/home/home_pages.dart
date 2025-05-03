@@ -4,11 +4,17 @@ import 'package:projectbia/pages/auth/login_pages.dart';
 import 'package:projectbia/pages/navbar_pages.dart';
 import 'package:projectbia/pages/header_pages.dart';
 
-class HomePages extends StatelessWidget {
+class HomePages extends StatefulWidget {
   const HomePages({super.key});
 
-  void _logout(BuildContext context) async {
-    await AuthService();
+  @override
+  State<HomePages> createState() => _HomePagesState();
+}
+
+class _HomePagesState extends State<HomePages> {
+  Future<void> _logout(BuildContext context) async {
+    await AuthService(); // Ensure AuthService implements logout
+    if (!mounted) return;
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(builder: (_) => const LoginPages()),
@@ -18,62 +24,79 @@ class HomePages extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      bottomNavigationBar: const CheerfulMinimalistNavBar(),
       body: SafeArea(
         child: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Header Section
               CustomHeader(
                 username: "Guest",
                 onLogout: () => _logout(context),
                 onNotifTap: () {},
                 onSearch: (query) {},
               ),
-
               const SizedBox(height: 16),
-
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Kategori Populer',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    _buildPinterestGrid(),
-                    const SizedBox(height: 24),
-                    _buildBookSlider(),
-                  ],
-                ),
-              ),
-
+              _buildSearchBar(),
+              const SizedBox(height: 16),
+              _buildSectionTitle('Kategori Populer'),
+              const SizedBox(height: 8),
+              _buildPinterestGrid(),
               const SizedBox(height: 24),
-
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16),
-                child: Text(
-                  'Selamat Datang di E-Layanan Publik!',
-                  style: TextStyle(fontSize: 18),
-                  textAlign: TextAlign.center,
-                ),
-              ),
-              const SizedBox(height: 20),
+              _buildBookSlider(),
+              const SizedBox(height: 24),
+              _buildWelcomeText(),
             ],
           ),
         ),
       ),
-      bottomNavigationBar: const CheerfulMinimalistNavBar(),
+    );
+  }
+
+  Widget _buildSearchBar() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: TextField(
+        decoration: InputDecoration(
+          hintText: "Search something...",
+          prefixIcon: const Icon(Icons.search),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          contentPadding: const EdgeInsets.symmetric(vertical: 0),
+        ),
+        onChanged: (value) {
+          // Add search logic if needed
+        },
+      ),
+    );
+  }
+
+  Widget _buildSectionTitle(String title) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Text(
+        title,
+        style: const TextStyle(
+          fontSize: 18,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildWelcomeText() {
+    return const Padding(
+      padding: EdgeInsets.symmetric(horizontal: 16),
+      child: Text(
+        'Selamat Datang di E-Layanan Publik!',
+        style: TextStyle(fontSize: 18),
+        textAlign: TextAlign.center,
+      ),
     );
   }
 
   Widget _buildBookSlider() {
-    // Dummy data buku
     final books = [
       {'title': 'Laskar Pelangi', 'image': 'assets/images/laskarpelangi.jpg'},
       {'title': 'Filosofi Teras', 'image': 'assets/images/laskarpelangi.jpg'},
@@ -85,18 +108,10 @@ class HomePages extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16),
-          child: Text(
-            'Buku Populer',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-          ),
-        ),
+        _buildSectionTitle('Buku Populer'),
         const SizedBox(height: 16),
-
-        // Biar fleksibel dan ga overflow
         SizedBox(
-          height: 240, // total tinggi container buku + judul + spacing
+          height: 240,
           child: ListView.separated(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             scrollDirection: Axis.horizontal,
@@ -104,11 +119,9 @@ class HomePages extends StatelessWidget {
             separatorBuilder: (_, __) => const SizedBox(width: 12),
             itemBuilder: (context, index) {
               final book = books[index];
-
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Cover buku
                   Container(
                     width: 140,
                     height: 200,
@@ -140,16 +153,12 @@ class HomePages extends StatelessWidget {
                       ),
                     ),
                   ),
-
                   const SizedBox(height: 8),
-
-                  // Judul buku
                   SizedBox(
                     width: 140,
                     child: Text(
                       book['title'] ?? '',
-                      textAlign:
-                          TextAlign.center, // ini bikin teksnya di tengah
+                      textAlign: TextAlign.center,
                       style: const TextStyle(
                         fontWeight: FontWeight.w600,
                         fontSize: 14,
@@ -181,11 +190,14 @@ class HomePages extends StatelessWidget {
       'Dunia',
     ];
 
-    return Wrap(
-      spacing: 8,
-      runSpacing: 8,
-      children:
-          categories.map((label) => _buildRoundedCategoryCard(label)).toList(),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Wrap(
+        spacing: 8,
+        runSpacing: 8,
+        children:
+            categories.map((label) => _buildRoundedCategoryCard(label)).toList(),
+      ),
     );
   }
 
@@ -204,38 +216,43 @@ class HomePages extends StatelessWidget {
     ];
     final color = colors[label.length % colors.length];
 
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-      decoration: BoxDecoration(
-        color: color,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(_getSmallCategoryIcon(label), size: 18, color: Colors.black54),
-          const SizedBox(width: 6),
-          Text(
-            label,
-            style: const TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-              color: Colors.black87,
+    return InkWell(
+      onTap: () {
+        // Add category tap functionality
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        decoration: BoxDecoration(
+          color: color,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 4,
+              offset: const Offset(0, 2),
             ),
-          ),
-        ],
+          ],
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(_getSmallCategoryIcon(label), 
+            size: 18, 
+            color: Colors.black54),
+            const SizedBox(width: 6),
+            Text(
+              label,
+              style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+                color: Colors.black87,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
-
-  
 
   IconData _getSmallCategoryIcon(String category) {
     switch (category) {

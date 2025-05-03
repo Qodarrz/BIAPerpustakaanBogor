@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:projectbia/pages/home/home_pages.dart'; // Import halaman tujuan
-import 'package:projectbia/pages/book/book_pages.dart'; // Import halaman tujuan
-import 'package:projectbia/pages/market/market_pages.dart'; // Import halaman tujuan
-import 'package:projectbia/pages/about/about_pages.dart'; // Import halaman tujuan
-import 'package:projectbia/pages/auth/login_pages.dart'; // Import halaman tujuan
-import 'package:projectbia/pages/auth/register_pages.dart'; // Import halaman tujuan
+import 'package:projectbia/pages/home/home_pages.dart';
+import 'package:projectbia/pages/book/book_pages.dart';
+import 'package:projectbia/pages/market/market_pages.dart';
+import 'package:projectbia/pages/about/about_pages.dart';
+import 'package:projectbia/pages/auth/login_pages.dart';
+import 'package:projectbia/pages/auth/register_pages.dart';
 
 void main() {
   runApp(const MyApp());
@@ -20,16 +20,17 @@ class MyApp extends StatelessWidget {
       title: 'Flutter Demo',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        useMaterial3: true,
       ),
-      initialRoute: '/welcome', // Arahkan ke WelcomeScreen pertama kali
+      initialRoute: '/welcome',
       routes: {
-        '/welcome': (context) => const WelcomeScreen(), // Routing WelcomeScreen
-        '/home': (context) => const HomePages(), // Halaman utama
-        '/book': (context) => const BookPages(), // Halaman utama
-        '/market': (context) => const MarketPages(), // Halaman utama
-        '/about': (context) => const AboutPages(), // Halaman utama
-        '/login': (context) => const LoginPages(), // Halaman utama
-        '/register': (context) => const RegisterPages(), // Halaman utama
+        '/welcome': (context) => const WelcomeScreen(),
+        '/home': (context) => const HomePages(),
+        '/book': (context) => const BookPages(),
+        '/market': (context) => const MarketPages(),
+        '/about': (context) => const AboutPages(),
+        '/login': (context) => const LoginPages(),
+        '/register': (context) => const RegisterPages(),
       },
     );
   }
@@ -44,23 +45,23 @@ class WelcomeScreen extends StatefulWidget {
 
 class _WelcomeScreenState extends State<WelcomeScreen> {
   double _opacity = 0.0;
+  double _scale = 0.8;
 
   @override
   void initState() {
     super.initState();
 
-    // Animasi fade in
+    // Animation sequence
     Future.delayed(const Duration(milliseconds: 300), () {
       setState(() {
         _opacity = 1.0;
+        _scale = 1.0;
       });
     });
 
-    // Setelah 3 detik, navigasi ke home_pages.dart
-    Future.delayed(const Duration(seconds: 3), () {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (context) => const HomePages()),
-      );
+    // Navigate after 2.5 seconds
+    Future.delayed(const Duration(seconds: 2, milliseconds: 500), () {
+      Navigator.of(context).pushReplacementNamed('/home');
     });
   }
 
@@ -68,48 +69,59 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            children: [
-              const Spacer(flex: 2),
-              SizedBox(
-                width: MediaQuery.of(context).size.width * 0.8,
-                child: AspectRatio(
-                  aspectRatio: 1,
-                  child: AnimatedOpacity(
-                    duration: const Duration(seconds: 1),
-                    opacity: _opacity,
-                    child: SvgPicture.string(
-                      paymentProcessIllistration,
-                      fit: BoxFit.scaleDown,
-                    ),
+      body: Center(
+        child: AnimatedOpacity(
+          duration: const Duration(milliseconds: 800),
+          opacity: _opacity,
+          child: AnimatedScale(
+            duration: const Duration(milliseconds: 800),
+            scale: _scale,
+            curve: Curves.easeOutBack,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // SVG Logo with a subtle shadow
+                Container(
+                  width: 180,
+                  height: 180,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(40),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.05),
+                        blurRadius: 20,
+                        spreadRadius: 2,
+                        offset: const Offset(0, 10),
+                      ),
+                    ],
+                  ),
+                  child: SvgPicture.string(
+                    paymentProcessIllistration,
+                    fit: BoxFit.contain,
                   ),
                 ),
-              ),
-              const Spacer(flex: 2),
-              Column(
-                children: [
-                  Text(
-                    "Hello and Welcome",
-                    style: Theme.of(context).textTheme.titleLarge,
-                    textAlign: TextAlign.center,
+                const SizedBox(height: 32),
+                // App Name with smooth animation
+                const Text(
+                  "Perpustakaan Bogor",
+                  style: TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black87,
                   ),
-                  const SizedBox(height: 16),
-                  Text(
-                    "We're setting things up for you. This will only take a moment.",
-                    style: Theme.of(context).textTheme.bodyMedium,
-                    textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 16),
+                // Minimal loading indicator
+                SizedBox(
+                  width: 100,
+                  child: LinearProgressIndicator(
+                    backgroundColor: Colors.grey[200],
+                    color: Colors.deepPurple,
+                    minHeight: 2,
                   ),
-                  const SizedBox(height: 32),
-                  Transform.scale(
-                    scale: 1.8,
-                    child: const CircularProgressIndicator.adaptive(),
-                  ),
-                ],
-              ),
-            ],
+                ),
+              ],
+            ),
           ),
         ),
       ),

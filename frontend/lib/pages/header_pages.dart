@@ -75,7 +75,9 @@ class CustomHeader extends StatelessWidget {
                     onPressed: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => const LoginPages()),
+                        MaterialPageRoute(
+                          builder: (context) => const LoginPages(),
+                        ),
                       );
                     },
                   ),
@@ -83,20 +85,8 @@ class CustomHeader extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 12),
 
           // Search Bar
-          TextField(
-            decoration: InputDecoration(
-              hintText: "Search something...",
-              prefixIcon: const Icon(Icons.search),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              contentPadding: const EdgeInsets.symmetric(vertical: 0),
-            ),
-            onChanged: onSearch,
-          ),
         ],
       ),
     );
