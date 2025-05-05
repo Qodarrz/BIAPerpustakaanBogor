@@ -85,13 +85,32 @@ exports.up = async function(knex) {
       table.timestamp('created_at').defaultTo(knex.fn.now());
       table.timestamp('updated_at').defaultTo(knex.fn.now());
     });
+
+    // Borrowings table
+    await knex.schema
+    .dropTableIfExists("borrowings")
+    .createTable('borrowings', (table) => {
+      table.increments('borrowing_id').primary();
+      table.integer('book_id').unsigned().notNullable().references('book_id').inTable('books').onDelete('RESTRICT').onUpdate('CASCADE');
+      table.integer('user_id').unsigned().notNullable().references('user_id').inTable('users').onDelete('RESTRICT').onUpdate('CASCADE');
+      table.timestamp('borrow_date').defaultTo(knex.fn.now());
+      table.date('return_date');
+      table.timestamp('actual_return_date').nullable();
+      table.text('reason').nullable();
+      table.enu('borrowing_status', ['borrowed', 'returned', 'overdue']).notNullable().defaultTo('borrowed');
+      table.text('notes').nullable();
+      table.timestamp('created_at').defaultTo(knex.fn.now());
+      table.timestamp('updated_at').defaultTo(knex.fn.now());
+    });
 };
 
 /**
  * @param { import("knex").Knex } knex
  * @returns { Promise<void> }
  */
+
 exports.down = async function(knex) {
+  await knex.schema.dropTableIfExists('borrowings');
   await knex.schema.dropTableIfExists('products');
   await knex.schema.dropTableIfExists('books');
   await knex.schema.dropTableIfExists('categories');
