@@ -9,6 +9,7 @@ import { ProductsRouter } from "./routers/products.router.js";
 import { CategoriesRouter } from "./routers/categories.router.js";
 import { GenresRouter } from "./routers/genres.router.js";
 import { BorrowingsRouter } from "./routers/borrowings.router.js";
+import { HistoryBorrowingsRouter } from "./routers/history-borrowings.router.js";
 dotenv.config();
 
 const PORT = process.env.PORT || 5000;
@@ -29,6 +30,7 @@ app.use(express.urlencoded({ extended: true }));
 const authRouter = new AuthRouter().getRouter();
 const usersRouter = new UsersRouter().getRouter();
 const borrowingsRouter = new BorrowingsRouter().getRouter();
+const historyBorrowingsRouter = new HistoryBorrowingsRouter().getRouter();
 const booksRouter = new BooksRouter().getRouter();
 const productsRouter = new ProductsRouter().getRouter();
 const categoriesRouter = new CategoriesRouter().getRouter();
@@ -37,6 +39,7 @@ app.use("/api/auth", authRouter);
 app.use("/api/users", usersRouter);
 app.use("/api/books", booksRouter);
 app.use("/api/borrowings", borrowingsRouter);
+app.use("/api/history/borrowings", historyBorrowingsRouter);
 app.use("/api/categories", categoriesRouter);
 app.use("/api/genres", genresRouter);
 app.use("/api/products", productsRouter); // ini belum dibuat controller nya
